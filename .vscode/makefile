@@ -17,12 +17,13 @@ static_link_flags = -static-libstdc++ -static-libgcc -static -lComctl32
 # folders
 ODIR = ./.vscode/obj
 
-OPT = -O2
+OPT = -g
 CCflags = -std=c++17 $(OPT) -D_mingw_
 
 # sources
 OBJ_starter = \
 	$(ODIR)/main.o \
+	$(ODIR)/tests.o \
 	$(ODIR)/cxy.o \
 	$(ODIR)/cRunWatch.o \
 
