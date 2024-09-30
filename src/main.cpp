@@ -29,53 +29,75 @@ public:
             myMaxDim = myHeight;
     }
     bool isCollision(
-        const cRect &other) const;
+        const cRect &other,
+        cxy& overlap ) const;
 };
 
 struct sProblem
 {
 };
 
-bool cRect::isCollision(const cRect &other) const
+/// @brief collision detector with this rectangle
+/// @param other rectangle
+/// @param[out] overlap avoidance vector if collision occurred ( use to clear the collision )
+/// @return true if collsion occurred
+
+bool cRect::isCollision(
+    const cRect &other,
+    cxy& overlap ) const
 {
     // check for centers too far apart
     // for any possibility of a collision
     double d2 = myCenter.dist2(other.myCenter);
     double mind2 = myMaxDim + other.myMaxDim;
     mind2 *= mind2;
-    if (d2 > mind2)
+    if (d2 > mind2) {
+        overlap = cxy(0,0);
         return false;
+    }
 
     // collision possible, check in detail
+    bool ret = false;
     double dy = abs(myCenter.y - other.myCenter.y);
     double miny = abs(myHeight + other.myHeight) / 2;
-    if (dy < miny)
-        return true;
+    overlap.y = miny - dy;
+    if (dy < miny) 
+        ret = true;
+    
     double dx = abs(myCenter.x - other.myCenter.x);
     double minx = abs(myWidth + other.myWidth) / 2;
-    if (dx < minx)
-        return true;
+    overlap.x = minx - dx;
+    if (dx < minx) 
+        ret = true;
+    
+    if( ! ret )
+    {
+        // no collision occurred
+        overlap = cxy(0,0);
+    }
 
-    return false;
+
+    return ret;
 }
 
 bool unitTests()
 {
+    cxy overlap;
     cRect A(cxy(0, 0), 10, 20);
     cRect B(cxy(100, 100), 1, 2);
-    if (A.isCollision(B))
+    if (A.isCollision(B,overlap))
         return false;
     cRect C(cxy(9, 100), 1, 2);
-    if (C.isCollision(A))
+    if (C.isCollision(A,overlap))
         return false;
     cRect D(cxy(6, 11), 1, 2);
-    if (D.isCollision(A))
+    if (D.isCollision(A,overlap))
         return false;
     cRect E(cxy(5, 11), 1, 2);
-    if (E.isCollision(A))
+    if (E.isCollision(A,overlap))
         return false;
     cRect F(cxy(4, 11), 1, 2);
-    if (!F.isCollision(A))
+    if (!F.isCollision(A,overlap))
         return false;
 
     std::cout << "Unit tests passed\n";
@@ -85,6 +107,7 @@ void performanceTest()
 {
     raven::set::cRunWatch::Start();
     srand(time(NULL));
+    cxy overlap;
     cRect A(cxy(0, 0), 10, 20);
     for (int r = 0; r < 10; r++)
     {
@@ -94,7 +117,7 @@ void performanceTest()
         {
             raven::set::cRunWatch aWatcher("collision detector");
 
-            A.isCollision(B);
+            A.isCollision(B,overlap);
         }
     }
     raven::set::cRunWatch::Report();
