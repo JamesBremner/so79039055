@@ -1,10 +1,6 @@
 
-
 #include <algorithm>
 #include <time.h> /* time */
-
-#include <wex.h>
-#include "cStarterGUI.h"
 
 #include "redgreen.h"
 
@@ -153,20 +149,7 @@ void sProblem::dodge()
         }
     }
 }
-
-class cGUI : public cStarterGUI
-{
-public:
-    cGUI()
-        : cStarterGUI(
-              "Starter",
-              {50, 50, 1000, 500})
-    {
-
-        fm.events().draw(
-            [this](PAINTSTRUCT &ps)
-            {
-                wex::shapes S(ps);
+void cGUI::draw(wex::shapes& S) {
                 cxy c;
                 int w;
                 int h;
@@ -189,13 +172,7 @@ public:
                                  (int)(c.y - h / 2),
                                  (int)w, (int)h});
                 }
-            });
-        show();
-        run();
-    }
-
-private:
-};
+}
 
 main()
 {

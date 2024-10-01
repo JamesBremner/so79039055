@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 #include "cxy.h"
+#include <wex.h>
+#include "cStarterGUI.h"
 #include "redgreen.h"
 
 bool unitTests();
@@ -43,3 +45,26 @@ struct sProblem
 };
 
 extern sProblem theProblem;
+
+class cGUI : public cStarterGUI
+{
+public:
+    cGUI()
+        : cStarterGUI(
+              "Starter",
+              {50, 50, 1000, 500})
+    {
+
+        fm.events().draw(
+            [this](PAINTSTRUCT &ps)
+            {
+                wex::shapes S(ps);
+                draw(S);
+            });
+        show();
+        run();
+    }
+
+private:
+    void draw(wex::shapes &S);
+};
