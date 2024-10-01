@@ -6,25 +6,25 @@ bool dodgeTest()
     bool ret = false;
     theProblem.clear();
     theProblem.addGreen(
-        cxy(5,5), 5, 5 );
+        cxy(5, 5), 5, 5);
     theProblem.addRed(
-        cxy(4,4),5,5);
+        cxy(4, 4), 5, 5);
 
     theProblem.dodge();
 
-                cxy c;
-                int w;
-                int h;
-    theProblem.myGreens[0].getRaw(c,w,h);
+    cxy c;
+    int w;
+    int h;
+    theProblem.myGreens[0].getRaw(c, w, h);
     // if( c.x == 140 && c.y == 140 )
-         ret = true;
+    ret = true;
 
     theProblem.clear();
     return ret;
 }
 bool unitTests()
 {
-        if( ! dodgeTest() )
+    if (!dodgeTest())
         return false;
 
     // cxy overlap;
@@ -45,8 +45,6 @@ bool unitTests()
     // if (!F.isCollision(A, overlap))
     //     return false;
 
-
-
     std::cout << "Unit tests passed\n";
     return true;
 }
@@ -64,6 +62,20 @@ void performanceTest()
             raven::set::cRunWatch aWatcher("collision detector");
 
             A.isCollision(B);
+        }
+    }
+    raven::set::cRunWatch::Report();
+}
+void performanceTest2()
+{
+    raven::set::cRunWatch::Start();
+    for (int k = 0; k < 50; k++)
+    {
+        theProblem.generate();
+        {
+
+            raven::set::cRunWatch aWatcher("dodger");
+            theProblem.dodge();
         }
     }
     raven::set::cRunWatch::Report();

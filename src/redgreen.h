@@ -11,6 +11,7 @@
 
 bool unitTests();
 void performanceTest();
+void performanceTest2();
 
 class cRect
 {
@@ -27,8 +28,14 @@ public:
     bool isCollision(
         const cRect &other);
 
+    bool dodge(
+    const cRect &other);
+
     void getScaled(cxy &c, int &w, int &h) const;
     void getRaw(cxy &c, int &w, int &h) const;
+    cxy getCenter() {
+        return myCenter;
+    }
 };
 
 struct sProblem
