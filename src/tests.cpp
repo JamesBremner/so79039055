@@ -15,7 +15,7 @@ bool dodgeTest()
                 cxy c;
                 int w;
                 int h;
-    theProblem.myGreens[0].get(c,w,h);
+    theProblem.myGreens[0].getRaw(c,w,h);
     // if( c.x == 140 && c.y == 140 )
          ret = true;
 

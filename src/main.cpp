@@ -18,58 +18,81 @@ cRect::cRect(const cxy &c, int w, int h)
         myMaxDim = myHeight;
 }
 
-void cRect::get(cxy &c, int &w, int &h) const
+void cRect::getScaled(cxy &c, int &w, int &h) const
 {
     const int scale = 10;
     const int off = 50;
     c = cxy(
         off + scale * myCenter.x,
         off + scale * myCenter.y);
-    w = off + scale * myWidth;
-    h = off + scale * myHeight;
+    w = scale * myWidth;
+    h = scale * myHeight;
+}
+void cRect::getRaw(cxy &c, int &w, int &h) const
+{
+
+    c = myCenter;
+    w = myWidth;
+    h = myHeight;
 }
 
 /// @brief collision detector with this rectangle
-/// @param other rectangle
+/// @param other rectangle, must be red
 /// @param[out] overlap avoidance vector if collision occurred ( use to clear the collision )
 /// @return true if collsion occurred
 
 bool cRect::isCollision(
     const cRect &other,
-    cxy &overlap) const
+    cxy &overlap) 
 {
     // check for centers too far apart
     // for any possibility of a collision
+
     double d2 = myCenter.dist2(other.myCenter);
     double mind2 = myMaxDim + other.myMaxDim;
     mind2 *= mind2;
     if (d2 > mind2)
     {
         overlap = cxy(0, 0);
+        //std::cout << "OK1 " << myCenter << " " << other.myCenter << "\n";
         return false;
     }
 
     // collision possible, check in detail
-    bool ret = false;
-    double dy = myCenter.y - other.myCenter.y;
-    double miny = ( myHeight + other.myHeight) / 2;
-    overlap.y = (dy - miny) / 2;
-    if (abs(dy) < miny)
-        ret = true;
 
-    double dx = (myCenter.x - other.myCenter.x);
-    double minx = abs(myWidth + other.myWidth) / 2;
-    overlap.x = ( dx - minx ) / 2;
-    if (abs(dx) < minx)
-        ret = true;
-
-    if (!ret)
+    double mindx = (myWidth + other.myWidth) / 2;
+    double mindy = (myHeight + other.myHeight) / 2;
+    double dx = abs(myCenter.x - other.myCenter.x);
+    double dy = abs(myCenter.y - other.myCenter.y);
+    if (dx > mindx || dy > mindy)
     {
-        // no collision occurred
         overlap = cxy(0, 0);
+        return false;
     }
 
-    return ret;
+    // distance from red to green centers
+    double dxy = sqrt( dx*dx+dy*dy);
+
+    // move the green rect well out of the way
+    cxy vxy = other.myCenter.vect(myCenter);
+    double mindxy = sqrt(myMaxDim * myMaxDim + other.myMaxDim * other.myMaxDim);
+    cxy nvxy(
+        vxy.x / dxy,
+        vxy.y / dxy);
+    cxy vfix(
+        nvxy.x * mindxy,
+        nvxy.y * mindxy);
+
+    std::cout << "Moving " << myCenter 
+        << " by " << vfix;
+
+
+    myCenter.x += vfix.x;
+    myCenter.y += vfix.y;
+
+    std::cout << " to " << myCenter << "\n";
+    return true;
+
 }
 
 void sProblem::clear()
@@ -78,20 +101,28 @@ void sProblem::clear()
     myReds.clear();
 }
 
+void sProblem::gen1()
+{
+    clear();
+    myGreens.emplace_back(
+        cxy(5, 5), 5, 5);
+    myReds.emplace_back(
+        cxy(4, 4), 5, 5);
+}
 void sProblem::generate()
 {
     clear();
-    const int redCount = 1;
+    const int redCount = 40;
     srand(time(NULL));
     for (int col = 0; col < 4; col++)
         for (int row = 0; row < 6; row++)
             myGreens.emplace_back(
-                cxy(20 * row, 20 * col),
-                4, 1);
+                cxy(10 * row, 15 * col),
+                4, 3);
     for (int i = 0; i < redCount; i++)
         myReds.emplace_back(
-            cxy(rand() % 50 + 1, rand() % 30 + 1),
-            10, 10);
+            cxy(rand() % 50 + 1, rand() % 50 + 1),
+            1, 1);
 }
 
 sProblem theProblem;
@@ -114,16 +145,16 @@ void sProblem::dodge()
         {
             if (green.isCollision(red, overlap))
             {
-                cxy c;
-                int w;
-                int h;
-                green.get(c, w, h);
-                std::cout << "moving " << c << " by " << overlap;
+                // cxy c;
+                // int w;
+                // int h;
+                // green.getRaw(c, w, h);
+                // std::cout << "moving " << c << " by " << overlap;
 
-                green.move(overlap);
+                // green.move(overlap);
 
-                green.get(c, w, h);
-                std::cout << " to " << c << "\n";
+                // green.getRaw(c, w, h);
+                // std::cout << " to " << c << "\n";
             }
         }
     }
@@ -149,18 +180,20 @@ public:
                 S.color(0x00FF00);
                 for (auto &r : theProblem.myGreens)
                 {
-                    r.get(c, w, h);
-                    S.rectangle({c.x - w / 2,
-                                 c.y - h / 2,
-                                 w, h});
+                    r.getScaled(c, w, h);
+                    //std::cout << "grph green " << c << "\n";
+                    S.rectangle({(int)(c.x - w / 2),
+                                 (int)(c.y - h / 2),
+                                 (int)w, (int)h});
                 }
                 S.color(0x0000FF);
                 for (auto &r : theProblem.myReds)
                 {
-                    r.get(c, w, h);
-                    S.rectangle({c.x - w / 2,
-                                 c.y - h / 2,
-                                 w, h});
+                    r.getScaled(c, w, h);
+                    //std::cout << "grph red " << c << "\n";
+                    S.rectangle({(int)(c.x - w / 2),
+                                 (int)(c.y - h / 2),
+                                 (int)w, (int)h});
                 }
             });
         show();

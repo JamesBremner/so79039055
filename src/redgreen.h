@@ -24,13 +24,14 @@ public:
     }
     bool isCollision(
         const cRect &other,
-        cxy &overlap) const;
+        cxy &overlap);
     void move(const cxy &v)
     {
         myCenter.x += v.x;
         myCenter.y += v.y;
     }
-    void get(cxy &c, int &w, int &h) const;
+    void getScaled(cxy &c, int &w, int &h) const;
+    void getRaw(cxy &c, int &w, int &h) const;
 };
 
 struct sProblem
@@ -39,6 +40,7 @@ struct sProblem
     std::vector<cRect> myReds;
 
     void clear();
+    void gen1();
     void generate();
     void dodge();
     void addGreen(cxy c, int w, int h);
