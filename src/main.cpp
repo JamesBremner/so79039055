@@ -38,12 +38,11 @@ void cRect::getRaw(cxy &c, int &w, int &h) const
 
 /// @brief collision detector with this rectangle
 /// @param other rectangle, must be red
-/// @param[out] overlap avoidance vector if collision occurred ( use to clear the collision )
+
 /// @return true if collsion occurred
 
 bool cRect::isCollision(
-    const cRect &other,
-    cxy &overlap) 
+    const cRect &other )
 {
     // check for centers too far apart
     // for any possibility of a collision
@@ -53,8 +52,6 @@ bool cRect::isCollision(
     mind2 *= mind2;
     if (d2 > mind2)
     {
-        overlap = cxy(0, 0);
-        //std::cout << "OK1 " << myCenter << " " << other.myCenter << "\n";
         return false;
     }
 
@@ -65,10 +62,8 @@ bool cRect::isCollision(
     double dx = abs(myCenter.x - other.myCenter.x);
     double dy = abs(myCenter.y - other.myCenter.y);
     if (dx > mindx || dy > mindy)
-    {
-        overlap = cxy(0, 0);
         return false;
-    }
+
 
     // distance from red to green centers
     double dxy = sqrt( dx*dx+dy*dy);
@@ -138,12 +133,11 @@ void sProblem::addRed(cxy c, int w, int h)
 
 void sProblem::dodge()
 {
-    cxy overlap;
     for (auto &red : myReds)
     {
         for (auto &green : myGreens)
         {
-            if (green.isCollision(red, overlap))
+            if (green.isCollision(red))
             {
                 // cxy c;
                 // int w;

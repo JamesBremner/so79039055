@@ -23,13 +23,8 @@ public:
     {
     }
     bool isCollision(
-        const cRect &other,
-        cxy &overlap);
-    void move(const cxy &v)
-    {
-        myCenter.x += v.x;
-        myCenter.y += v.y;
-    }
+        const cRect &other);
+
     void getScaled(cxy &c, int &w, int &h) const;
     void getRaw(cxy &c, int &w, int &h) const;
 };

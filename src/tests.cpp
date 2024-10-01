@@ -54,7 +54,6 @@ void performanceTest()
 {
     raven::set::cRunWatch::Start();
     srand(time(NULL));
-    cxy overlap;
     cRect A(cxy(0, 0), 10, 20);
     for (int r = 0; r < 10; r++)
     {
@@ -64,7 +63,7 @@ void performanceTest()
         {
             raven::set::cRunWatch aWatcher("collision detector");
 
-            A.isCollision(B, overlap);
+            A.isCollision(B);
         }
     }
     raven::set::cRunWatch::Report();
