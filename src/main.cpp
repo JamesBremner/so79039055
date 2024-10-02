@@ -160,12 +160,18 @@ void sProblem::generate()
     for (int col = 0; col < 4; col++)
         for (int row = 0; row < 6; row++)
             myGreens.emplace_back(
-                cxy(10 * row, 15 * col),
+                cxy(9 * row, 15 * col),
                 4, 3);
     for (int i = 0; i < redCount; i++)
         myReds.emplace_back(
-            cxy(rand() % 50 + 1, rand() % 50 + 1),
+            cxy(rand() % 45 + 1, rand() % 45 + 1),
             redsize, redsize);
+
+    myBoundary = {
+        cxy(1, 1),
+        cxy(52, 1),
+        cxy(52, 52),
+        cxy(1, 52)};
 }
 
 sProblem theProblem;
@@ -331,6 +337,20 @@ void cGUI::draw(wex::shapes &S)
         //     std::to_string( (int)rc.x ) + "," + std::to_string((int)rc.y),
         //     {c.x - w/2,c.y-h/2}        );
     }
+
+    S.color(0xFF0000);
+    cxy p = theProblem.myBoundary[0];
+    cxy n;
+    for (int k = 1; k < theProblem.myBoundary.size(); k++)
+    {
+        n = theProblem.myBoundary[k];
+        S.line({10 * p.x, 10 * p.y,
+                10 * n.x, 10 * n.y});
+        p = n;
+    }
+    n = theProblem.myBoundary[0];
+    S.line({10 * p.x, 10 * p.y,
+            10 * n.x, 10 * n.y});
 }
 
 main()

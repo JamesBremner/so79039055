@@ -66,6 +66,7 @@ struct sProblem
 {
     std::vector<cRect> myGreens;
     std::vector<cRect> myReds;
+    std::vector<cxy> myBoundary;
 
     void clear();
     void gen1();
