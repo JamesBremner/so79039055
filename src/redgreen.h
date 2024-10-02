@@ -73,6 +73,7 @@ struct sProblem
     void dodge();
     void addGreen(cxy c, int w, int h);
     void addRed(cxy c, int w, int h);
+    void readFile( const std::string fname );
 };
 
 extern sProblem theProblem;
@@ -82,9 +83,10 @@ class cGUI : public cStarterGUI
 public:
     cGUI()
         : cStarterGUI(
-              "Starter",
+              "RedGreen",
               {50, 50, 1000, 500})
     {
+        menus();
 
         fm.events().draw(
             [this](PAINTSTRUCT &ps)
@@ -98,4 +100,5 @@ public:
 
 private:
     void draw(wex::shapes &S);
+    void menus();
 };

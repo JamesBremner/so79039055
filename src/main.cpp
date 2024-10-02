@@ -58,7 +58,7 @@ bool cRect::dodge(
     if (!isCollision(other))
         return false;
 
-    //std::cout << myCenter << " collision with " << other.myCenter << "\n";
+    // std::cout << myCenter << " collision with " << other.myCenter << "\n";
 
     // remember starting location
     cxy firstPosition = myCenter;
@@ -109,7 +109,7 @@ bool cRect::dodge(
         myCenter.x = firstPosition.x + v.x;
         myCenter.y = firstPosition.y + v.y;
 
-        //std::cout << "try move " << v << " to " << myCenter;
+        // std::cout << "try move " << v << " to " << myCenter;
 
         loopCount++;
 
@@ -120,7 +120,7 @@ bool cRect::dodge(
         {
             if (isCollision(red))
             {
-               // std::cout << " collided with " << red.getCenter() << "\n";
+                // std::cout << " collided with " << red.getCenter() << "\n";
                 fclear = false;
                 break;
             }
@@ -189,6 +189,90 @@ void sProblem::dodge()
         }
     }
 }
+
+std::vector<std::string> tokenize(const std::string &line)
+{
+    std::vector<std::string> ret;
+    std::stringstream sst(line);
+    std::string a;
+    while (getline(sst, a, ' '))
+        ret.push_back(a);
+    return ret;
+}
+
+void sProblem::readFile(const std::string fname)
+{
+    std::ifstream ifs(fname);
+    if (!ifs.is_open())
+        throw std::runtime_error(
+            "Cannot open file " + fname);
+
+    std::string line;
+
+    clear();
+
+    while (getline(ifs, line))
+    {
+        std::cout << line << "\n";
+        auto tokens = tokenize(line);
+        if (tokens.size() != 5)
+        {
+            std::cout << line
+                      << "\nbad input format\n";
+            continue;
+        }
+        if (line[0] == 'g')
+        {
+            addGreen(
+                cxy(atof(tokens[1].c_str()),
+                    atof(tokens[2].c_str())),
+                atof(tokens[2].c_str()),
+                atof(tokens[3].c_str()));
+        }
+        if (line[0] == 'r')
+        {
+            addRed(
+                cxy(atof(tokens[1].c_str()),
+                    atof(tokens[2].c_str())),
+                atof(tokens[2].c_str()),
+                atof(tokens[3].c_str()));
+        }
+    }
+}
+void cGUI::menus()
+{
+    wex::menubar mb(fm);
+
+    wex::menu mf(fm);
+    mf.append("Open", [&](const std::string &title)
+              {
+        // prompt for file to open
+        wex::filebox fb( fm );
+        auto paths = fb.open();
+        if( paths.empty() )
+            return;
+        try
+        {
+             // read the file
+            theProblem.readFile( paths );
+
+            // move greens to avoid collisions
+            theProblem.dodge();
+
+            // refresh display with contents of opened file
+            fm.text("RedGreen " + paths);
+            fm.update();
+        }
+        catch( std::runtime_error& e )
+        {
+            wex::msgbox mb(
+                           std::string("Error reading file\n")+e.what());
+            exit(1);
+        } });
+
+    mb.append("File", mf);
+}
+
 void cGUI::draw(wex::shapes &S)
 {
     cxy c;
@@ -215,16 +299,16 @@ void cGUI::draw(wex::shapes &S)
             S.color(0x0);
             S.text(
                 "m",
-                {c.x - w / 2, c.y - h / 2});
+                {(int)(c.x - w / 2), (int)(c.y - h / 2)});
             break;
         case cRect::eStatus::failed:
             // no clear space = show '!F!' in top left
             S.color(0x0);
             S.text(
                 "!F!",
-                {c.x - w / 2, c.y - h / 2});
+                {(int)(c.x - w / 2), (int)(c.y - h / 2)});
             break;
-         }
+        }
         // cxy rc = r.getCenter();
         // S.color(0x0);
         // S.text(
@@ -256,9 +340,9 @@ main()
         std::cout << "unit test failed\n";
         exit(1);
     }
-    //performanceTest2();
-     theProblem.generate();
-     theProblem.dodge();
+    // performanceTest2();
+    theProblem.generate();
+    theProblem.dodge();
 
     cGUI theGUI;
     return 0;
