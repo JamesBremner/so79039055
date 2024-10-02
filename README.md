@@ -4,6 +4,23 @@ I have a rectangular boundary (blue). Within this space, there is a list of coll
 
 When a green rectangle collides with a red rectangle, I need to determine the nearest valid positions for the green rectangle that ensures it does not overlap with any of the red rectangles and lines.
 
-![image](https://github.com/user-attachments/assets/417693c8-0773-4058-bee0-4f0e6e425860)
+## Input
+
+Input is read from a space delimited text file.
+
+Each input line specifies a rectangle: color, center location ( x and y ), width and height.
+
+` red|green x y w h`
+
+Example
+```
+g 5 5 5 5
+r 4 4 5 5
+```
+
+## Example display
+
+![image](https://github.com/user-attachments/assets/63047714-a226-4e9c-8d4d-b5a17b30e4c7)
+
 
 'm' indicates that the green rectangle has been moved to avoid collision with red recangles.
