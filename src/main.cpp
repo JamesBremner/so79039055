@@ -7,7 +7,8 @@
 cRect::cRect(const cxy &c, int w, int h)
     : myCenter(c),
       myWidth(w),
-      myHeight(h)
+      myHeight(h),
+      myStatus(eStatus::fixed)
 {
     myMaxDim = myWidth;
     if (myHeight > myWidth)
@@ -42,39 +43,44 @@ bool cRect::isCollision(
     float dy = myCenter.y - other.myCenter.y;
 
     return (abs(dx) <= w && abs(dy) <= h);
-
 }
 
 /// @brief collision detector with this rectangle
 /// @param other rectangle, must be red
-
 /// @return true if collision occurred
+
+/// If collision, this rectangle ( green ) will be moved to a new location
+/// where it does not collide with any red rectangles
 
 bool cRect::dodge(
     const cRect &other)
 {
-
     if (!isCollision(other))
         return false;
 
     //std::cout << myCenter << " collision with " << other.myCenter << "\n";
 
+    // remember starting location
     cxy firstPosition = myCenter;
+
+    // loop over possible moves until clear spot found
     cxy v;
     bool fclear = false;
     int loopCount = 0;
     while (!fclear)
     {
+        // restore starting location
         myCenter = firstPosition;
+
         switch (loopCount)
         {
         case 0:
-            v.x = (myWidth + other.myWidth)/2;
+            v.x = (myWidth + other.myWidth) / 2;
             v.y = 0;
             break;
         case 1:
             v.x = 0;
-            v.y = (myHeight + other.myHeight)/2;
+            v.y = (myHeight + other.myHeight) / 2;
             break;
         case 2:
             v.x = -(myWidth + other.myWidth) / 2;
@@ -86,79 +92,48 @@ bool cRect::dodge(
             break;
         case 4:
             v.x = myWidth + other.myWidth;
-            v.y = -( myHeight + other.myHeight) / 2;
+            v.y = -(myHeight + other.myHeight) / 2;
             break;
         default:
+            // exhausted all possible moves
+            // the green square is trapped with red all around
+            // set green rectangle statu to failed
+            // leave the green where it started.
             std::cout << myCenter << "failed to move\n";
-             myCenter = firstPosition;
-             return true;
+            myCenter = firstPosition;
+            myStatus = eStatus::failed;
+            return true;
         }
-        
-        myCenter.x += v.x;
-        myCenter.y += v.y;
 
-        //std::cout << "try move " << v <<" to " << myCenter;
+        // move the rectangle
+        myCenter.x = firstPosition.x + v.x;
+        myCenter.y = firstPosition.y + v.y;
+
+        //std::cout << "try move " << v << " to " << myCenter;
 
         loopCount++;
 
+        // check that there are no collisions with reds
+        // at the new location
         fclear = true;
         for (auto &red : theProblem.myReds)
         {
             if (isCollision(red))
             {
-                //std::cout << " collided with " << red.getCenter() << "\n";
+               // std::cout << " collided with " << red.getCenter() << "\n";
                 fclear = false;
                 break;
             }
         }
-    }
+    } // end loop over possible moves
+
+    myStatus = eStatus::moved;
 
     // std::cout << "Moving " << firstPosition
     //           << " by " << v
     //           << " to " << myCenter << "\n";
 
     return true;
-
-    // // distance from red to green centers
-    // double dx = abs(myCenter.x - other.myCenter.x);
-    // double dy = abs(myCenter.y - other.myCenter.y);
-    // double dxy = sqrt(dx * dx + dy * dy);
-
-    // // move the green rect well out of the way
-    // cxy vxy = other.myCenter.vect(myCenter);
-    // double mindxy = sqrt(myMaxDim * myMaxDim + other.myMaxDim * other.myMaxDim) / 2;
-    // cxy nvxy(
-    //     vxy.x / dxy,
-    //     vxy.y / dxy);
-    // cxy vfix(
-    //     nvxy.x * mindxy,
-    //     nvxy.y * mindxy);
-
-    // cxy firstPosition = myCenter;
-    // myCenter.x += vfix.x;
-    // myCenter.y += vfix.y;
-
-    // std::cout << "Moving " << firstPosition
-    //           << " by " << vfix
-    //           << " to " << myCenter << "\n";
-
-    // // check for collisions at new position
-    // bool fclear = true;
-    // for (auto &red : theProblem.myReds)
-    // {
-    //     if (isCollision(red))
-    //     {
-    //         fclear = false;
-    //         break;
-    //     }
-    // }
-    // if (fclear)
-    //     return true;
-
-    // myCenter.x = firstPosition.x + mindxy;
-    // myCenter.y = firstPosition.y;
-
-    // return true;
 }
 
 void sProblem::clear()
@@ -181,7 +156,7 @@ void sProblem::generate()
     const int redCount = 40;
     const int redsize = 3;
     srand(time(NULL));
-    //srand( 100 );
+    // srand( 100 );
     for (int col = 0; col < 4; col++)
         for (int row = 0; row < 6; row++)
             myGreens.emplace_back(
@@ -221,7 +196,6 @@ void cGUI::draw(wex::shapes &S)
     int h;
     S.fill();
     S.textHeight(10);
-    S.color(0x00FF00);
     for (auto &r : theProblem.myGreens)
     {
         S.color(0x00FF00);
@@ -230,6 +204,27 @@ void cGUI::draw(wex::shapes &S)
         S.rectangle({(int)(c.x - w / 2),
                      (int)(c.y - h / 2),
                      (int)w, (int)h});
+
+        switch (r.getStatus())
+        {
+        case cRect::eStatus::fixed:
+            // original location - no status display
+            break;
+        case cRect::eStatus::moved:
+            // moved location - show 'm' in top left
+            S.color(0x0);
+            S.text(
+                "m",
+                {c.x - w / 2, c.y - h / 2});
+            break;
+        case cRect::eStatus::failed:
+            // no clear space = show '!F!' in top left
+            S.color(0x0);
+            S.text(
+                "!F!",
+                {c.x - w / 2, c.y - h / 2});
+            break;
+         }
         // cxy rc = r.getCenter();
         // S.color(0x0);
         // S.text(
@@ -261,9 +256,9 @@ main()
         std::cout << "unit test failed\n";
         exit(1);
     }
-    performanceTest2();
-    // theProblem.generate();
-    // theProblem.dodge();
+    //performanceTest2();
+     theProblem.generate();
+     theProblem.dodge();
 
     cGUI theGUI;
     return 0;

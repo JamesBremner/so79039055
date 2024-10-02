@@ -15,12 +15,15 @@ void performanceTest2();
 
 class cRect
 {
-    cxy myCenter;
-    int myWidth;
-    int myHeight;
-    int myMaxDim;
+    public:
 
-public:
+    enum class eStatus
+    {
+        fixed,          // there was no need to move the rectangle
+        moved,          // the rect was moved to avoild red collisions
+        failed,         // the rect was trapped with no move that avoided red collisions
+    };
+
     cRect(const cxy &c, int w, int h);
     cRect()
     {
@@ -29,13 +32,34 @@ public:
         const cRect &other);
 
     bool dodge(
-    const cRect &other);
+        const cRect &other);
+
+    // setters
+
+    void status( eStatus s )
+    {
+        myStatus = s;
+    }
+
+    // getters
 
     void getScaled(cxy &c, int &w, int &h) const;
     void getRaw(cxy &c, int &w, int &h) const;
-    cxy getCenter() {
+    cxy getCenter() const
+    {
         return myCenter;
     }
+    eStatus getStatus() const
+    {
+        return myStatus;
+    }
+
+private:
+    cxy myCenter;
+    int myWidth;
+    int myHeight;
+    int myMaxDim;
+    eStatus myStatus;
 };
 
 struct sProblem
