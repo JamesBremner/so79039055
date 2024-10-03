@@ -20,7 +20,7 @@ r 4 4 5 5
 
 ## Example display
 
-![image](https://github.com/user-attachments/assets/63047714-a226-4e9c-8d4d-b5a17b30e4c7)
+![image](https://github.com/user-attachments/assets/39024686-9c06-4046-aa46-fcd96a740f85)
 
 
 'm' indicates that the green rectangle has been moved to avoid collision with red recangles.
