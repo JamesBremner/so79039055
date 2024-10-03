@@ -24,6 +24,7 @@ CCflags = -std=c++17 $(OPT) -D_mingw_
 OBJ_starter = \
 	$(ODIR)/main.o \
 	$(ODIR)/tests.o \
+	$(ODIR)/cGUI.o \
 	$(ODIR)/cxy.o \
 	$(ODIR)/cRunWatch.o \
 

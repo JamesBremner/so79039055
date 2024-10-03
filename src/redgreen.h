@@ -28,8 +28,16 @@ class cRect
     cRect()
     {
     }
+
+    /// @brief True if collision between this and other rectangle
+    /// @param other 
+    /// @return 
     bool isCollision(
         const cRect &other);
+
+    /// @brief True if collision betwee this recangle and the boundary
+    /// @return 
+    bool isBoundaryCollision() const;
 
     bool dodge(
         const cRect &other);
@@ -82,22 +90,7 @@ extern sProblem theProblem;
 class cGUI : public cStarterGUI
 {
 public:
-    cGUI()
-        : cStarterGUI(
-              "RedGreen",
-              {50, 50, 1000, 500})
-    {
-        menus();
-
-        fm.events().draw(
-            [this](PAINTSTRUCT &ps)
-            {
-                wex::shapes S(ps);
-                draw(S);
-            });
-        show();
-        run();
-    }
+    cGUI();
 
 private:
     void draw(wex::shapes &S);

@@ -22,8 +22,25 @@ bool dodgeTest()
     theProblem.clear();
     return ret;
 }
+bool BoundaryCollisionTest()
+{
+    bool ret = false;
+    theProblem.clear();
+    theProblem.myBoundary = {
+        cxy(1, 1),
+        cxy(52, 1),
+        cxy(52, 52),
+        cxy(1, 52)};
+    cRect t(cxy(-3,30),4,3);
+    if( t.isBoundaryCollision())
+        ret = true;
+    return ret;
+}
+
 bool unitTests()
 {
+    if( !BoundaryCollisionTest() )
+        return false;
     if (!dodgeTest())
         return false;
 

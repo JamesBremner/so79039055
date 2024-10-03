@@ -27,10 +27,77 @@ void cRect::getScaled(cxy &c, int &w, int &h) const
 }
 void cRect::getRaw(cxy &c, int &w, int &h) const
 {
-
     c = myCenter;
     w = myWidth;
     h = myHeight;
+}
+
+bool cRect::isBoundaryCollision() const
+{
+    // check boundary exists
+    if (!theProblem.myBoundary.size())
+        return false;
+
+    //std::cout << "isBoundaryCollision " << myCenter << "\n";
+
+    auto closed = theProblem.myBoundary;
+    closed.push_back( closed[0]);
+
+    // check that the rectangle center is inside the boundary
+    // outside counts as a "collision"
+    if( ! myCenter.isInside( closed )) {
+        //std::cout << "center outside\n";
+        return true;
+    }
+
+    // loop over boundary edges
+    cxy be1 = theProblem.myBoundary[0];
+    cxy be2;
+    for (int k = 1; k < closed.size(); k++)
+    {
+        be2 = closed[k];
+        cxy re1, re2;
+        // loop over rectangle edges
+        for (int ei = 0; ei < 4; ei++)
+        {
+            cxy p;
+            switch (ei)
+            {
+            case 0:
+                re1.x = myCenter.x - myWidth / 2;
+                re1.y = myCenter.y - myHeight / 2;
+                re2.x = myCenter.x + myWidth / 2;
+                re2.y = myCenter.y - myHeight / 2;
+                break;
+            case 1:
+                re1 = re2;
+                re2.x = myCenter.x + myWidth / 2;
+                re2.y = myCenter.y + myHeight / 2;
+                break;
+            case 2:
+                re1 = re2;
+                re1.x = myCenter.x - myWidth / 2;
+                re1.y = myCenter.y + myHeight / 2;
+                break;
+            case 3:
+                re1 = re2;
+                re1.x = myCenter.x - myWidth / 2;
+                re1.y = myCenter.y - myHeight / 2;
+                break;
+            }
+            if (cxy::isIntersection(
+                    p,
+                    be1, be2,
+                    re1, re2)) {
+                    std::cout << "intersection\n";
+                return true;
+                    }
+        }
+        be1 = be2;
+    }
+
+    //std::cout << "<= clear\n";
+    return false;
 }
 bool cRect::isCollision(
     const cRect &other)
@@ -58,7 +125,7 @@ bool cRect::dodge(
     if (!isCollision(other))
         return false;
 
-    // std::cout << myCenter << " collision with " << other.myCenter << "\n";
+     std::cout << myCenter << " collision with " << other.myCenter << "\n";
 
     // remember starting location
     cxy firstPosition = myCenter;
@@ -109,7 +176,7 @@ bool cRect::dodge(
         myCenter.x = firstPosition.x + v.x;
         myCenter.y = firstPosition.y + v.y;
 
-        // std::cout << "try move " << v << " to " << myCenter;
+        //std::cout << "try move " << v << " to " << myCenter;
 
         loopCount++;
 
@@ -125,6 +192,12 @@ bool cRect::dodge(
                 break;
             }
         }
+
+        // check no collision with boundary
+        if (fclear)
+            if (isBoundaryCollision())
+                fclear = false;
+
     } // end loop over possible moves
 
     myStatus = eStatus::moved;
@@ -146,25 +219,33 @@ void sProblem::gen1()
 {
     clear();
     myGreens.emplace_back(
-        cxy(5, 5), 5, 5);
-    myReds.emplace_back(
-        cxy(4, 4), 5, 5);
+        cxy(-3,30), 4, 3);
+    // myReds.emplace_back(
+    //     cxy(4, 4), 5, 5);
+        myBoundary = {
+        cxy(1, 1),
+        cxy(52, 1),
+        cxy(52, 52),
+        cxy(1, 52)};
 }
 void sProblem::generate()
 {
-    clear();
     const int redCount = 40;
     const int redsize = 3;
+
+    clear();
+
+    for (int col = 1; col < 7; col++)
+        for (int row = 0; row < 4; row++)
+            myGreens.emplace_back(
+                cxy(8 * col, 10 + 12 * row),
+                4, 3);
+
     srand(time(NULL));
     // srand( 100 );
-    for (int col = 0; col < 4; col++)
-        for (int row = 0; row < 6; row++)
-            myGreens.emplace_back(
-                cxy(9 * row, 15 * col),
-                4, 3);
     for (int i = 0; i < redCount; i++)
         myReds.emplace_back(
-            cxy(rand() % 45 + 1, rand() % 45 + 1),
+            cxy(rand() % 45 + 5, rand() % 45 + 5),
             redsize, redsize);
 
     myBoundary = {
@@ -245,113 +326,6 @@ void sProblem::readFile(const std::string fname)
         }
     }
 }
-void cGUI::menus()
-{
-    wex::menubar mb(fm);
-
-    wex::menu mf(fm);
-    mf.append("Open", [&](const std::string &title)
-              {
-        // prompt for file to open
-        wex::filebox fb( fm );
-        auto paths = fb.open();
-        if( paths.empty() )
-            return;
-        try
-        {
-             // read the file
-            theProblem.readFile( paths );
-
-            // move greens to avoid collisions
-            theProblem.dodge();
-
-            // refresh display with contents of opened file
-            fm.text("RedGreen " + paths);
-            fm.update();
-        }
-        catch( std::runtime_error& e )
-        {
-            wex::msgbox mb(
-                           std::string("Error reading file\n")+e.what());
-            exit(1);
-        } });
-
-    mb.append("File", mf);
-}
-
-void cGUI::draw(wex::shapes &S)
-{
-    cxy c;
-    int w;
-    int h;
-    S.fill();
-    S.textHeight(10);
-    for (auto &r : theProblem.myGreens)
-    {
-        S.color(0x00FF00);
-        r.getScaled(c, w, h);
-        // std::cout << "grph green " << c << "\n";
-        S.rectangle({(int)(c.x - w / 2),
-                     (int)(c.y - h / 2),
-                     (int)w, (int)h});
-
-        switch (r.getStatus())
-        {
-        case cRect::eStatus::fixed:
-            // original location - no status display
-            break;
-        case cRect::eStatus::moved:
-            // moved location - show 'm' in top left
-            S.color(0x0);
-            S.text(
-                "m",
-                {(int)(c.x - w / 2), (int)(c.y - h / 2)});
-            break;
-        case cRect::eStatus::failed:
-            // no clear space = show '!F!' in top left
-            S.color(0x0);
-            S.text(
-                "!F!",
-                {(int)(c.x - w / 2), (int)(c.y - h / 2)});
-            break;
-        }
-        // cxy rc = r.getCenter();
-        // S.color(0x0);
-        // S.text(
-        //     std::to_string( (int)rc.x ) + "," + std::to_string((int)rc.y),
-        //     {c.x - w/2,c.y-h/2}        );
-    }
-
-    S.color(0x0000FF);
-    for (auto &r : theProblem.myReds)
-    {
-        S.color(0x0000FF);
-        r.getScaled(c, w, h);
-        // std::cout << "grph red " << c << "\n";
-        S.rectangle({(int)(c.x - w / 2),
-                     (int)(c.y - h / 2),
-                     (int)w, (int)h});
-        // cxy rc = r.getCenter();
-        // S.color(0x0);
-        // S.text(
-        //     std::to_string( (int)rc.x ) + "," + std::to_string((int)rc.y),
-        //     {c.x - w/2,c.y-h/2}        );
-    }
-
-    S.color(0xFF0000);
-    cxy p = theProblem.myBoundary[0];
-    cxy n;
-    for (int k = 1; k < theProblem.myBoundary.size(); k++)
-    {
-        n = theProblem.myBoundary[k];
-        S.line({10 * p.x, 10 * p.y,
-                10 * n.x, 10 * n.y});
-        p = n;
-    }
-    n = theProblem.myBoundary[0];
-    S.line({10 * p.x, 10 * p.y,
-            10 * n.x, 10 * n.y});
-}
 
 main()
 {
@@ -362,6 +336,7 @@ main()
     }
     // performanceTest2();
     theProblem.generate();
+    //theProblem.gen1();
     theProblem.dodge();
 
     cGUI theGUI;
