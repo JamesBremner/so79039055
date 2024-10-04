@@ -15,13 +15,12 @@ void performanceTest2();
 
 class cRect
 {
-    public:
-
+public:
     enum class eStatus
     {
-        fixed,          // there was no need to move the rectangle
-        moved,          // the rect was moved to avoild red collisions
-        failed,         // the rect was trapped with no move that avoided red collisions
+        fixed,  // there was no need to move the rectangle
+        moved,  // the rect was moved to avoild red collisions
+        failed, // the rect was trapped with no move that avoided red collisions
     };
 
     cRect(const cxy &c, int w, int h);
@@ -30,21 +29,31 @@ class cRect
     }
 
     /// @brief True if collision between this and other rectangle
-    /// @param other 
-    /// @return 
+    /// @param other
+    /// @return
     bool isCollision(
         const cRect &other);
 
     /// @brief True if collision betwee this recangle and the boundary
-    /// @return 
+    /// @return
     bool isBoundaryCollision() const;
+
+    /// @brief True if no collsion with anything
+    /// @return
+    bool isClear();
+
+    /// @brief Find minimal moves in each direction to clear red rectangle
+    /// @param red
+    /// @return Minimal moves sorted into increasing distance
+
+    std::vector<cxy> findMoves(const cRect &red);
 
     bool dodge(
         const cRect &other);
 
     // setters
 
-    void status( eStatus s )
+    void status(eStatus s)
     {
         myStatus = s;
     }
@@ -82,7 +91,7 @@ struct sProblem
     void dodge();
     void addGreen(cxy c, int w, int h);
     void addRed(cxy c, int w, int h);
-    void readFile( const std::string fname );
+    void readFile(const std::string fname);
 };
 
 extern sProblem theProblem;

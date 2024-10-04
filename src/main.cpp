@@ -38,15 +38,16 @@ bool cRect::isBoundaryCollision() const
     if (!theProblem.myBoundary.size())
         return false;
 
-    //std::cout << "isBoundaryCollision " << myCenter << "\n";
+    // std::cout << "isBoundaryCollision " << myCenter << "\n";
 
     auto closed = theProblem.myBoundary;
-    closed.push_back( closed[0]);
+    closed.push_back(closed[0]);
 
     // check that the rectangle center is inside the boundary
     // outside counts as a "collision"
-    if( ! myCenter.isInside( closed )) {
-        //std::cout << "center outside\n";
+    if (!myCenter.isInside(closed))
+    {
+        // std::cout << "center outside\n";
         return true;
     }
 
@@ -88,15 +89,16 @@ bool cRect::isBoundaryCollision() const
             if (cxy::isIntersection(
                     p,
                     be1, be2,
-                    re1, re2)) {
-                    std::cout << "intersection\n";
+                    re1, re2))
+            {
+                std::cout << "intersection\n";
                 return true;
-                    }
+            }
         }
         be1 = be2;
     }
 
-    //std::cout << "<= clear\n";
+    // std::cout << "<= clear\n";
     return false;
 }
 bool cRect::isCollision(
@@ -112,6 +114,57 @@ bool cRect::isCollision(
     return (abs(dx) <= w && abs(dy) <= h);
 }
 
+bool cRect::isClear()
+{
+    // check that there are no collisions with reds
+    for (auto &red : theProblem.myReds)
+    {
+        if (isCollision(red))
+        {
+            // std::cout << " collided with " << red.getCenter() << "\n";
+            return false;
+        }
+    }
+
+    // check no collision with boundary
+    if (isBoundaryCollision())
+        return false;
+
+    return true;
+}
+
+std::vector<cxy> cRect::findMoves(const cRect &red)
+{
+    std::vector<cxy> vv;
+
+    // distance between rectangle centers
+    double dx = red.myCenter.x - myCenter.x;
+    double dy = red.myCenter.y - myCenter.y;
+
+    // safe movement if 50% overlap
+    // ensure margin of at least 1 unit
+    double sx = 1 + (myWidth + red.myWidth) / 2;
+    double sy = 1 + (myHeight + red.myHeight) / 2;
+
+    // minimal moves in each direction, allowing for less than 50% overlap
+    vv.push_back(cxy(sx - abs(dx), 0));
+    vv.push_back(cxy(abs(dx) - sx, 0));
+    vv.push_back(cxy(0, sy - abs(dy)));
+    vv.push_back(cxy(0, abs(dy) - sy));
+
+    // sort into increasing order of distance moved
+    std::sort(
+        vv.begin(), vv.end(),
+        []( const cxy& va, const cxy& vb ) -> bool 
+        {
+            return (abs(va.x) + abs(va.y)
+             < (abs(vb.x) + abs(vb.y)));
+        });
+
+    return vv;
+
+}
+
 /// @brief collision detector with this rectangle
 /// @param other rectangle, must be red
 /// @return true if collision occurred
@@ -125,88 +178,40 @@ bool cRect::dodge(
     if (!isCollision(other))
         return false;
 
-     std::cout << myCenter << " collision with " << other.myCenter << "\n";
+    // std::cout << myCenter << " collision with " << other.myCenter << "\n";
 
     // remember starting location
     cxy firstPosition = myCenter;
 
     // loop over possible moves until clear spot found
-    cxy v;
-    bool fclear = false;
-    int loopCount = 0;
-    while (!fclear)
+    for (auto v : findMoves(other))
     {
-        // restore starting location
-        myCenter = firstPosition;
-
-        switch (loopCount)
-        {
-        case 0:
-            v.x = (myWidth + other.myWidth) / 2;
-            v.y = 0;
-            break;
-        case 1:
-            v.x = 0;
-            v.y = (myHeight + other.myHeight) / 2;
-            break;
-        case 2:
-            v.x = -(myWidth + other.myWidth) / 2;
-            v.y = 0;
-            break;
-        case 3:
-            v.x = 0;
-            v.y = -(myHeight + other.myHeight) / 2;
-            break;
-        case 4:
-            v.x = myWidth + other.myWidth;
-            v.y = -(myHeight + other.myHeight) / 2;
-            break;
-        default:
-            // exhausted all possible moves
-            // the green square is trapped with red all around
-            // set green rectangle statu to failed
-            // leave the green where it started.
-            std::cout << myCenter << "failed to move\n";
-            myCenter = firstPosition;
-            myStatus = eStatus::failed;
-            return true;
-        }
-
         // move the rectangle
         myCenter.x = firstPosition.x + v.x;
         myCenter.y = firstPosition.y + v.y;
 
         //std::cout << "try move " << v << " to " << myCenter;
 
-        loopCount++;
-
-        // check that there are no collisions with reds
-        // at the new location
-        fclear = true;
-        for (auto &red : theProblem.myReds)
+        // check that there are no collisions at the new location
+        if (isClear())
         {
-            if (isCollision(red))
-            {
-                // std::cout << " collided with " << red.getCenter() << "\n";
-                fclear = false;
-                break;
-            }
+            std::cout << "Moving " << firstPosition
+                      << " by " << v
+                      << " to " << myCenter << "\n";
+            myStatus = eStatus::moved;
+            break;
         }
+    }
 
-        // check no collision with boundary
-        if (fclear)
-            if (isBoundaryCollision())
-                fclear = false;
-
-    } // end loop over possible moves
-
-    myStatus = eStatus::moved;
-
-    // std::cout << "Moving " << firstPosition
-    //           << " by " << v
-    //           << " to " << myCenter << "\n";
+    if (myStatus != eStatus::moved)
+    {
+        myStatus = eStatus::failed;
+        myCenter = firstPosition;
+        std::cout << myCenter << "failed to move\n";
+    }
 
     return true;
+
 }
 
 void sProblem::clear()
@@ -219,10 +224,10 @@ void sProblem::gen1()
 {
     clear();
     myGreens.emplace_back(
-        cxy(-3,30), 4, 3);
+        cxy(-3, 30), 4, 3);
     // myReds.emplace_back(
     //     cxy(4, 4), 5, 5);
-        myBoundary = {
+    myBoundary = {
         cxy(1, 1),
         cxy(52, 1),
         cxy(52, 52),
@@ -232,27 +237,30 @@ void sProblem::generate()
 {
     const int redCount = 40;
     const int redsize = 3;
+    const int maxX = 60;
+    const int maxY = 60;
+    int rowSpace = maxY / 4;
 
     clear();
 
     for (int col = 1; col < 7; col++)
         for (int row = 0; row < 4; row++)
             myGreens.emplace_back(
-                cxy(8 * col, 10 + 12 * row),
+                cxy(8 * col, 10 + rowSpace * row),
                 4, 3);
 
-    srand(time(NULL));
-    // srand( 100 );
+     srand(time(NULL));
+    //srand(100);
     for (int i = 0; i < redCount; i++)
         myReds.emplace_back(
-            cxy(rand() % 45 + 5, rand() % 45 + 5),
+            cxy(rand() % (maxX - 6) + 5, rand() % (maxY - 6) + 5),
             redsize, redsize);
 
     myBoundary = {
         cxy(1, 1),
-        cxy(52, 1),
-        cxy(52, 52),
-        cxy(1, 52)};
+        cxy(maxX, 1),
+        cxy(maxX, maxY),
+        cxy(1, maxY)};
 }
 
 sProblem theProblem;
@@ -336,7 +344,7 @@ main()
     }
     // performanceTest2();
     theProblem.generate();
-    //theProblem.gen1();
+    // theProblem.gen1();
     theProblem.dodge();
 
     cGUI theGUI;

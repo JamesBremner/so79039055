@@ -3,7 +3,7 @@
     cGUI::cGUI()
         : cStarterGUI(
               "RedGreen",
-              {50, 50, 800, 650})
+              {50, 50, 800, 750})
     {
         menus();
 
@@ -121,6 +121,6 @@ void cGUI::draw(wex::shapes &S)
         p = n;
     }
     n = theProblem.myBoundary[0];
-    S.line({50+10 * p.x, 50+10 * p.y,
-            50+10 * n.x, 50+10 * n.y});
+    S.line({(int)(50+10 * p.x), (int)(50+10 * p.y),
+            (int)(50+10 * n.x), (int)(50+10 * n.y)});
 }

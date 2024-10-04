@@ -31,15 +31,34 @@ bool BoundaryCollisionTest()
         cxy(52, 1),
         cxy(52, 52),
         cxy(1, 52)};
-    cRect t(cxy(-3,30),4,3);
-    if( t.isBoundaryCollision())
+    cRect t(cxy(-3, 30), 4, 3);
+    if (t.isBoundaryCollision())
         ret = true;
     return ret;
 }
 
+bool findMovesTest()
+{
+    cRect green(cxy(5, 5), 4, 5);
+    cRect red(cxy(4, 5), 4, 5);
+    auto vv = green.findMoves(red);
+    if (vv[0].x != 4)
+        return false;
+    if (vv[1].x != -4)
+        return false;
+    if (vv[2].y != 6)
+        return false;
+    if (vv[3].y != -6)
+        return false;
+
+    return true;
+}
+
 bool unitTests()
 {
-    if( !BoundaryCollisionTest() )
+    if (!findMovesTest())
+        return false;
+    if (!BoundaryCollisionTest())
         return false;
     if (!dodgeTest())
         return false;
