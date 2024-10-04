@@ -8,9 +8,9 @@ When a green rectangle collides with a red rectangle, I need to determine the ne
 
 Input is read from a space delimited text file.
 
-Input line with first letter 'g' specifies a green rectangle: center location ( x and y ), width and height.
-Input line with first letter 'r' specifies a red rectangle: center location ( x and y ), width and height.
-Input line with first letter 'b' specifies the boundary points: x1 y1 x2 y2 ...
+- Input line with first letter 'g' specifies a green rectangle: center location ( x and y ), width and height.
+- Input line with first letter 'r' specifies a red rectangle: center location ( x and y ), width and height.
+- Input line with first letter 'b' specifies the boundary points: x1 y1 x2 y2 ...
 
 Example
 ```
