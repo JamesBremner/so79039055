@@ -8,14 +8,15 @@ When a green rectangle collides with a red rectangle, I need to determine the ne
 
 Input is read from a space delimited text file.
 
-Each input line specifies a rectangle: color, center location ( x and y ), width and height.
-
-` red|green x y w h`
+Input line with first letter 'g' specifies a green rectangle: center location ( x and y ), width and height.
+Input line with first letter 'r' specifies a red rectangle: center location ( x and y ), width and height.
+Input line with first letter 'b' specifies the boundary points: x1 y1 x2 y2 ...
 
 Example
 ```
 g 5 5 5 5
 r 4 4 5 5
+b 1 1 60 1 60 60 1 60
 ```
 
 ## Example display
