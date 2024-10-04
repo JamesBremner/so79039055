@@ -109,7 +109,6 @@ void performanceTest2()
     {
         theProblem.generate();
         {
-
             raven::set::cRunWatch aWatcher("dodger");
             theProblem.dodge();
         }

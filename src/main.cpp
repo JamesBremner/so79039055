@@ -10,9 +10,6 @@ cRect::cRect(const cxy &c, int w, int h)
       myHeight(h),
       myStatus(eStatus::fixed)
 {
-    myMaxDim = myWidth;
-    if (myHeight > myWidth)
-        myMaxDim = myHeight;
 }
 
 void cRect::getScaled(cxy &c, int &w, int &h) const
@@ -155,14 +152,12 @@ std::vector<cxy> cRect::findMoves(const cRect &red)
     // sort into increasing order of distance moved
     std::sort(
         vv.begin(), vv.end(),
-        []( const cxy& va, const cxy& vb ) -> bool 
+        [](const cxy &va, const cxy &vb) -> bool
         {
-            return (abs(va.x) + abs(va.y)
-             < (abs(vb.x) + abs(vb.y)));
+            return (abs(va.x) + abs(va.y) < (abs(vb.x) + abs(vb.y)));
         });
 
     return vv;
-
 }
 
 /// @brief collision detector with this rectangle
@@ -190,14 +185,14 @@ bool cRect::dodge(
         myCenter.x = firstPosition.x + v.x;
         myCenter.y = firstPosition.y + v.y;
 
-        //std::cout << "try move " << v << " to " << myCenter;
+        // std::cout << "try move " << v << " to " << myCenter;
 
         // check that there are no collisions at the new location
         if (isClear())
         {
-            std::cout << "Moving " << firstPosition
-                      << " by " << v
-                      << " to " << myCenter << "\n";
+            // std::cout << "Moving " << firstPosition
+            //           << " by " << v
+            //           << " to " << myCenter << "\n";
             myStatus = eStatus::moved;
             break;
         }
@@ -211,13 +206,13 @@ bool cRect::dodge(
     }
 
     return true;
-
 }
 
 void sProblem::clear()
 {
     myGreens.clear();
     myReds.clear();
+    myBoundary.clear();
 }
 
 void sProblem::gen1()
@@ -249,8 +244,8 @@ void sProblem::generate()
                 cxy(8 * col, 10 + rowSpace * row),
                 4, 3);
 
-     srand(time(NULL));
-    //srand(100);
+    srand(time(NULL));
+    // srand(100);
     for (int i = 0; i < redCount; i++)
         myReds.emplace_back(
             cxy(rand() % (maxX - 6) + 5, rand() % (maxY - 6) + 5),
@@ -272,6 +267,10 @@ void sProblem::addGreen(cxy c, int w, int h)
 void sProblem::addRed(cxy c, int w, int h)
 {
     myReds.emplace_back(c, w, h);
+}
+void sProblem::addBoundary( double x, double y )
+{
+    myBoundary.emplace_back( x, y );
 }
 
 void sProblem::dodge()
@@ -324,13 +323,20 @@ void sProblem::readFile(const std::string fname)
                 atof(tokens[2].c_str()),
                 atof(tokens[3].c_str()));
         }
-        if (line[0] == 'r')
+        else if (line[0] == 'r')
         {
             addRed(
                 cxy(atof(tokens[1].c_str()),
                     atof(tokens[2].c_str())),
                 atof(tokens[2].c_str()),
                 atof(tokens[3].c_str()));
+        }
+        else if (line[0] == 'b')
+        {
+            for (int i = 1; i < tokens.size(); i += 2)
+                addBoundary(
+                    atof(tokens[i].c_str()),
+                    atof(tokens[i + 1].c_str()));
         }
     }
 }
@@ -342,10 +348,10 @@ main()
         std::cout << "unit test failed\n";
         exit(1);
     }
-    // performanceTest2();
-    theProblem.generate();
-    // theProblem.gen1();
-    theProblem.dodge();
+    performanceTest2();
+    // theProblem.generate();
+    //  theProblem.gen1();
+    // theProblem.dodge();
 
     cGUI theGUI;
     return 0;

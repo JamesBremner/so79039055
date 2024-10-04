@@ -19,7 +19,7 @@ public:
     enum class eStatus
     {
         fixed,  // there was no need to move the rectangle
-        moved,  // the rect was moved to avoild red collisions
+        moved,  // the rect was moved to avoid red collisions
         failed, // the rect was trapped with no move that avoided red collisions
     };
 
@@ -30,24 +30,26 @@ public:
 
     /// @brief True if collision between this and other rectangle
     /// @param other
-    /// @return
+
     bool isCollision(
         const cRect &other);
 
     /// @brief True if collision betwee this recangle and the boundary
-    /// @return
+
     bool isBoundaryCollision() const;
 
     /// @brief True if no collsion with anything
-    /// @return
+
     bool isClear();
 
     /// @brief Find minimal moves in each direction to clear red rectangle
-    /// @param red
     /// @return Minimal moves sorted into increasing distance
 
     std::vector<cxy> findMoves(const cRect &red);
 
+    /// @brief move rectangle if needed to avoid collision
+    /// @param other 
+ 
     bool dodge(
         const cRect &other);
 
@@ -72,11 +74,10 @@ public:
     }
 
 private:
-    cxy myCenter;
-    int myWidth;
-    int myHeight;
-    int myMaxDim;
-    eStatus myStatus;
+    cxy myCenter;       // location of venter
+    int myWidth;        // width
+    int myHeight;        // height
+    eStatus myStatus;   // status
 };
 
 struct sProblem
@@ -91,6 +92,7 @@ struct sProblem
     void dodge();
     void addGreen(cxy c, int w, int h);
     void addRed(cxy c, int w, int h);
+    void addBoundary( double x, double y );
     void readFile(const std::string fname);
 };
 
