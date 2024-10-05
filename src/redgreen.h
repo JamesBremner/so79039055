@@ -94,6 +94,7 @@ struct sProblem
     void addRed(cxy c, int w, int h);
     void addBoundary( double x, double y );
     void readFile(const std::string fname);
+    void writeFile(const std::string fname);
 };
 
 extern sProblem theProblem;

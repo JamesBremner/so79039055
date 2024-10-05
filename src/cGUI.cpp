@@ -1,28 +1,30 @@
 #include "redgreen.h"
 
-    cGUI::cGUI()
-        : cStarterGUI(
-              "RedGreen",
-              {50, 50, 800, 750})
-    {
-        menus();
+cGUI::cGUI()
+    : cStarterGUI(
+          "RedGreen",
+          {50, 50, 800, 750})
+{
+    menus();
 
-        fm.events().draw(
-            [this](PAINTSTRUCT &ps)
-            {
-                wex::shapes S(ps);
-                draw(S);
-            });
-        show();
-        run();
-    }
+    fm.events().draw(
+        [this](PAINTSTRUCT &ps)
+        {
+            wex::shapes S(ps);
+            draw(S);
+        });
+    show();
+    run();
+}
 
 void cGUI::menus()
 {
     wex::menubar mb(fm);
 
     wex::menu mf(fm);
-    mf.append("Open", [&](const std::string &title)
+    
+    mf.append("Open",
+              [&](const std::string &title)
               {
         // prompt for file to open
         wex::filebox fb( fm );
@@ -47,6 +49,16 @@ void cGUI::menus()
                            std::string("Error reading file\n")+e.what());
             exit(1);
         } });
+
+    mf.append("Save",
+              [&](const std::string &title)
+              {
+                  wex::filebox fb(fm);
+                  auto paths = fb.save();
+                  if (paths.empty())
+                      return;
+                  theProblem.writeFile(paths);
+              });
 
     mb.append("File", mf);
 }
@@ -116,11 +128,11 @@ void cGUI::draw(wex::shapes &S)
     for (int k = 1; k < theProblem.myBoundary.size(); k++)
     {
         n = theProblem.myBoundary[k];
-        S.line({50+10 * p.x, 50+10 * p.y,
-                50+10 * n.x, 50+10 * n.y});
+        S.line({50 + 10 * p.x, 50 + 10 * p.y,
+                50 + 10 * n.x, 50 + 10 * n.y});
         p = n;
     }
     n = theProblem.myBoundary[0];
-    S.line({(int)(50+10 * p.x), (int)(50+10 * p.y),
-            (int)(50+10 * n.x), (int)(50+10 * n.y)});
+    S.line({(int)(50 + 10 * p.x), (int)(50 + 10 * p.y),
+            (int)(50 + 10 * n.x), (int)(50 + 10 * n.y)});
 }
