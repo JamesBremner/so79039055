@@ -25,3 +25,13 @@ b 1 1 60 1 60 60 1 60
 
 
 'm' indicates that the green rectangle has been moved to avoid collision with red recangles.
+
+## Performance
+
+The performance result for 50 runs of the 24 greens and 40 reds, randomly located for each run. Average less than 3 milliseconds for each run.
+
+```
+raven::set::cRunWatch code timing profile
+Calls           Mean (secs)     Total           Scope
+      50        0.0023184       0.11592 dodger
+```
